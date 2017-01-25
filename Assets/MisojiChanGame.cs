@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 public class MisojiChanGame {
 	public int age = 0;
-	Player firstPlayer;
-	Player secondPlayer;
-	Player winner;
+	public Player firstPlayer;
+	public Player secondPlayer;
+	public Player winner;
 
 	public MisojiChanGame() {
       	firstPlayer = new Player() { name = "1P" };
@@ -31,7 +31,7 @@ public class MisojiChanGame {
 			winner = FindWinner(player);
 	}
 
-	bool IsEnding() {
+	public bool IsEnding() {
 		return age >= 30;
 	}
 
@@ -39,7 +39,7 @@ public class MisojiChanGame {
         return firstPlayer == player ? secondPlayer : firstPlayer;
 	}
 
-	class Player  {
+	public class Player  {
 		public string name;
 	}
 }

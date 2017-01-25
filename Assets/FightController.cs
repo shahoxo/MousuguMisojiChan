@@ -4,43 +4,43 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class FightController : MonoBehaviour {
-	public int age = 0;
 	public Text textComponent;
 	public Text firstPlayerResult;
 	public Text secondPlayerResult;
 	public Button retryButton;
-	private bool isEnding { get { return age >= 30;} }
+	public Text turnPlayer;
+	
+	MisojiChanGame game = new MisojiChanGame();
 
 	void Awake() {
-		age = 0;
+		turnPlayer.text = game.firstPlayer.name;
 	}
 
 	void Update() {
 		WatchEnd();
-		textComponent.text = age.ToString();
+		textComponent.text = game.age.ToString();
 		WatchEnd();
 	}
 
 	public void IncrementAge(int year) {
-		if(isEnding)
-			return;
-		age += year;
+		game.IncrementAgeByFirstPlayer(year);
 	}
 
 	void WatchEnd() {
-		if(isEnding) {
+		if(game.IsEnding()) {
 			ShowResult();
 		}
 	}
 
 	void ShowResult() {
-		firstPlayerResult.text = "Win";
-		secondPlayerResult.text = "Lose";
+		var result = game.winner == game.firstPlayer ? new string[] { "Win", "Lose" } : new string[] { "Lose", "Win" };
+		firstPlayerResult.text = result[0];
+		secondPlayerResult.text = result[1];
 		retryButton.gameObject.SetActive(true);
 	}
 
 	public void RetryFight() {
-		age = 0;
+		game.Reset();
 		firstPlayerResult.text = secondPlayerResult.text = "";
 		retryButton.gameObject.SetActive(false);
 	}
