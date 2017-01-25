@@ -8,7 +8,8 @@ public class FightController : MonoBehaviour {
 	public Text textComponent;
 	public Text firstPlayerResult;
 	public Text secondPlayerResult;
-	private bool isEnding = false;
+	public Button retryButton;
+	private bool isEnding { get { return age >= 30;} }
 
 	void Awake() {
 		age = 0;
@@ -27,14 +28,20 @@ public class FightController : MonoBehaviour {
 	}
 
 	void WatchEnd() {
-		if(age >= 30) {
+		if(isEnding) {
 			ShowResult();
-			isEnding = true;
 		}
 	}
 
 	void ShowResult() {
 		firstPlayerResult.text = "Win";
 		secondPlayerResult.text = "Lose";
+		retryButton.gameObject.SetActive(true);
+	}
+
+	public void RetryFight() {
+		age = 0;
+		firstPlayerResult.text = secondPlayerResult.text = "";
+		retryButton.gameObject.SetActive(false);
 	}
 }
