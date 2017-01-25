@@ -13,12 +13,13 @@ public class FightController : MonoBehaviour {
 	MisojiChanGame game = new MisojiChanGame();
 
 	void Awake() {
-		turnPlayer.text = game.firstPlayer.name;
+		turnPlayer.text = game.turnPlayer.name;
 	}
 
 	void Update() {
 		WatchEnd();
 		textComponent.text = game.age.ToString();
+		turnPlayer.text = game.turnPlayer.name;
 		WatchEnd();
 	}
 

@@ -3,13 +3,16 @@ using System.Collections.Generic;
 
 public class MisojiChanGame {
 	public int age = 0;
+	public int turn = 1;
 	public Player firstPlayer;
 	public Player secondPlayer;
 	public Player winner;
+	public Player turnPlayer;
 
 	public MisojiChanGame() {
-      	firstPlayer = new Player() { name = "1P" };
-	  	secondPlayer = new Player() { name = "2P" };
+		firstPlayer = new Player() { name = "1P" };
+		secondPlayer = new Player() { name = "2P" };
+		UpdateTurnPlayer();
 	}
 
 	public void IncrementAgeByFirstPlayer(int age) {
@@ -27,6 +30,7 @@ public class MisojiChanGame {
 		if(IsEnding())
 			return;
 		this.age += age;
+		ProgressTurn();
 		if(IsEnding())
 			winner = FindWinner(player);
 	}
@@ -37,6 +41,19 @@ public class MisojiChanGame {
 
 	Player FindWinner(Player player) {
         return firstPlayer == player ? secondPlayer : firstPlayer;
+	}
+
+	void ProgressTurn() {
+		turn++;
+		UpdateTurnPlayer();
+	}
+
+	Player FindTurnPlayer() {
+		return turn % 2 == 1 ? firstPlayer : secondPlayer;
+	}
+
+	void UpdateTurnPlayer() {
+		turnPlayer = FindTurnPlayer();
 	}
 
 	public class Player  {
