@@ -6,14 +6,13 @@ public delegate void AgeHandler(int year);
 public class AgeIncrementor : MonoBehaviour {
 	
 	public event AgeHandler OnIncrementAge;
+	public FightController fightController;
 
 	void Start() {
-		//OnIncrementAge += GetComponent<FightController>().IncrementAge;
+		OnIncrementAge += fightController.IncrementAge;
 	}
 	public void IncrementAge(int year) {
-		// fire incrementing
-		Debug.Log(year);
-		//OnIncrementAge(year);
+		OnIncrementAge(year);
 	}
 
 	

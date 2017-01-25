@@ -5,13 +5,14 @@ using UnityEngine.UI;
 
 public class FightController : MonoBehaviour {
 	public int age = 0;
+	public Text textComponent;
 
 	void Awake() {
 		age = 0;
 	}
 
 	void Update() {
-		
+		textComponent.text = age.ToString();
 	}
 
 	public void IncrementAge(int year) {
