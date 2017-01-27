@@ -9,9 +9,9 @@ public class MisojiChanGame {
 	public Player winner;
 	public Player turnPlayer;
 
-	public MisojiChanGame() {
-		firstPlayer = new Player() { name = "1P" };
-		secondPlayer = new Player() { name = "2P" };
+	public MisojiChanGame(string firstPlayerName = "1P", string secondPlayerName = "2P") {
+		firstPlayer = new Player() { name = firstPlayerName };
+		secondPlayer = new Player() { name = secondPlayerName };
 		UpdateTurnPlayer();
 	}
 

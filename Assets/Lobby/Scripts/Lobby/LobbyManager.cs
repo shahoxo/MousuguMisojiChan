@@ -51,12 +51,12 @@ namespace Prototype.NetworkLobby
         
         protected ulong _currentMatchID;
 
-        protected LobbyHook _lobbyHooks;
+        protected MisojiLobbyHook _lobbyHooks;
 
         void Start()
         {
             s_Singleton = this;
-            _lobbyHooks = GetComponent<Prototype.NetworkLobby.LobbyHook>();
+            _lobbyHooks = GetComponent<MisojiLobbyHook>();
             currentPanel = mainMenuPanel;
 
             backButton.gameObject.SetActive(false);
