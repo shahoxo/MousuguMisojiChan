@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Networking;
-using UniRx
+using UniRx;
 
 public class GameManager : NetworkBehaviour {
 
