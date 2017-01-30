@@ -62,4 +62,11 @@ public class MisojiChanGame {
         public string name;
 	}
 
+    [System.Serializable]
+    public class Turn
+    {
+        public int id;
+        public int age;
+    }
+
 }
