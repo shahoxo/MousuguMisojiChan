@@ -17,6 +17,7 @@ public class GameManager : NetworkBehaviour {
 	MisojiChanGame game;
 	
 	static public void AddPlayer(GameObject gamePlayer, string _name, short playerControllerId) {
+        Debug.Log("hoge: " + _name);
 		var commer = new MisojiChanGame.Player() { name = _name };
         gamePlayer.GetComponent<MisojiPlayerController>().player = commer;
         gamePlayer.name = commer.name;
@@ -25,20 +26,21 @@ public class GameManager : NetworkBehaviour {
 	}
 
 	[ServerCallback]
-	private void Start(){
-		if(players.Count != 2)
-			Debug.Log("Not supported");
+    IEnumerator Start()
+    {
+        while (players.Count != 2)
+            yield return null;
+        yield return new WaitForSeconds(2.0f);
+
         game = new MisojiChanGame(players[0].player.name, players[1].player.name);
-		turnPlayer = game.turnPlayer;
+        turnPlayer = game.turnPlayer;
         RpcTurnPlayerName(turnPlayer);
         players[0].isMyTurn = players[0].player == game.turnPlayer;
         players[1].isMyTurn = players[1].player == game.turnPlayer;
-	}
 
-    void SyncTurnPlayerName(MisojiChanGame.Player player)
-    {
-        RpcTurnPlayerName(player);
     }
+
+
     [ClientRpc]
     public void RpcTurnPlayerName(MisojiChanGame.Player player)
     {
