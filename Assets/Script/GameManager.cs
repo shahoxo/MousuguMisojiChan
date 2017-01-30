@@ -15,6 +15,7 @@ public class GameManager : NetworkBehaviour {
     //[SyncVar(hook = "SyncTurnPlayerName")]
     public MisojiChanGame.Player turnPlayer;
 	MisojiChanGame game;
+    public MisojiPlayerController myPlayer;
 	
 	static public void AddPlayer(GameObject gamePlayer, string _name, short playerControllerId) {
         Debug.Log("hoge: " + _name);

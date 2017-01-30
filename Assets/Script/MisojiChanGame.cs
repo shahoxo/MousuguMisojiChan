@@ -10,8 +10,8 @@ public class MisojiChanGame {
 	public Player turnPlayer;
 
 	public MisojiChanGame(string firstPlayerName = "1P", string secondPlayerName = "2P") {
-		firstPlayer = new Player() { name = firstPlayerName };
-		secondPlayer = new Player() { name = secondPlayerName };
+		firstPlayer = new Player() { id = 1, name = firstPlayerName };
+		secondPlayer = new Player() { id = 2, name = secondPlayerName };
 		UpdateTurnPlayer();
 	}
 
@@ -58,6 +58,8 @@ public class MisojiChanGame {
 
     [System.Serializable]
 	public class Player  {
-		public string name;
+        public int id;
+        public string name;
 	}
+
 }
