@@ -6,17 +6,21 @@ using UnityEngine.Networking;
 
 public class GameManager : NetworkBehaviour {
 
-	static public List<MisojiChanGame.Player> players = new List<MisojiChanGame.Player>();
+	static public List<MisojiPlayerController> players = new List<MisojiPlayerController>();
 	public Text textComponent;
 	public Text firstPlayerResult;
 	public Text secondPlayerResult;
 	public Button retryButton;
-	public Text turnPlayer;
+	public Text turnPlayerText;
+    //[SyncVar(hook = "SyncTurnPlayerName")]
+    public MisojiChanGame.Player turnPlayer;
 	MisojiChanGame game;
 	
 	static public void AddPlayer(GameObject gamePlayer, string _name, short playerControllerId) {
 		var commer = new MisojiChanGame.Player() { name = _name };
-		players.Add(commer);
+        gamePlayer.GetComponent<MisojiPlayerController>().player = commer;
+        gamePlayer.name = commer.name;
+		players.Add(gamePlayer.GetComponent<MisojiPlayerController>());
 		Debug.Log(players.Count);
 	}
 
@@ -24,10 +28,22 @@ public class GameManager : NetworkBehaviour {
 	private void Start(){
 		if(players.Count != 2)
 			Debug.Log("Not supported");
-		game = new MisojiChanGame(players[0].name, players[2].name);
-		turnPlayer.text = game.turnPlayer.name;
+        game = new MisojiChanGame(players[0].player.name, players[1].player.name);
+		turnPlayer = game.turnPlayer;
+        RpcTurnPlayerName(turnPlayer);
+        players[0].isMyTurn = players[0].player == game.turnPlayer;
+        players[1].isMyTurn = players[1].player == game.turnPlayer;
 	}
 
+    void SyncTurnPlayerName(MisojiChanGame.Player player)
+    {
+        RpcTurnPlayerName(player);
+    }
+    [ClientRpc]
+    public void RpcTurnPlayerName(MisojiChanGame.Player player)
+    {
+        turnPlayerText.text = player.name;
+    }
 /*
 	void Update() {
 		WatchEnd();
@@ -42,8 +58,12 @@ public class GameManager : NetworkBehaviour {
 		
 	}
 
+    [Server]
 	public void IncrementAge(int year) {
 		game.IncrementAgeByFirstPlayer(year);
+
+        players[0].isMyTurn = players[0].player == game.turnPlayer;
+        players[1].isMyTurn = players[1].player == game.turnPlayer;
 	}
 
 	void WatchEnd() {

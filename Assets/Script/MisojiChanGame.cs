@@ -56,6 +56,7 @@ public class MisojiChanGame {
 		turnPlayer = FindTurnPlayer();
 	}
 
+    [System.Serializable]
 	public class Player  {
 		public string name;
 	}
