@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Networking;
+using UniRx
 
 public class GameManager : NetworkBehaviour {
 
@@ -25,6 +26,14 @@ public class GameManager : NetworkBehaviour {
 		players.Add(gamePlayer.GetComponent<MisojiPlayerController>());
 		Debug.Log(players.Count);
 	}
+
+    void Awake()
+    {
+        retryButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            this.RetryFight();
+        }).AddTo(this);
+    }
 
 	[ServerCallback]
     IEnumerator Start()
