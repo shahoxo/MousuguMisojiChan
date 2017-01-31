@@ -12,4 +12,6 @@ public class MisojiPlayerController : NetworkBehaviour {
     {
         this.player = player;
     }
+
+
 }

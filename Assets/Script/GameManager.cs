@@ -23,6 +23,8 @@ public class GameManager : NetworkBehaviour
     AgeSelector ageSelector;
     MisojiChanMessenger messenger;
 
+    MisojiPlayerController currentClientPlayer;
+
     static public void AddPlayer(GameObject gamePlayer, string _name, short playerControllerId)
     {
         var commer = new MisojiChanGame.Player() { name = _name };
@@ -60,8 +62,8 @@ public class GameManager : NetworkBehaviour
     void OnSnedTurnPlayer(NetworkMessage message)
     {
         var turnPlayerMessage = message.ReadMessage<MisojiChanMessenger.TurnPlayerMessage>();
-
-        turnPlayerText.text = turnPlayerMessage.name;
+        currentClientPlayer = GameObject.FindObjectsOfType<MisojiPlayerController>().FirstOrDefault(player => player.isLocalPlayer);
+        turnPlayerText.text = turnPlayerMessage.name + (currentClientPlayer.player.id == turnPlayerMessage.id ? "(あなた)" : "");
 
     }
 
