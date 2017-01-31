@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Networking;
 using UniRx;
+using System.Linq;
 
 public class GameManager : NetworkBehaviour
 {
@@ -25,9 +26,10 @@ public class GameManager : NetworkBehaviour
     static public void AddPlayer(GameObject gamePlayer, string _name, short playerControllerId)
     {
         var commer = new MisojiChanGame.Player() { name = _name };
-        gamePlayer.GetComponent<MisojiPlayerController>().player = commer;
+        gamePlayer.GetComponent<MisojiPlayerController>().SetPlayer(commer);
         gamePlayer.name = commer.name;
         players.Add(gamePlayer.GetComponent<MisojiPlayerController>());
+
         Debug.Log(players.Count);
     }
 
@@ -46,7 +48,6 @@ public class GameManager : NetworkBehaviour
             Debug.Log("age: " + age);
             messenger.SendAge(age);
         }).AddTo(this);
-
     }
 
     [Server]
@@ -69,9 +70,12 @@ public class GameManager : NetworkBehaviour
     {
         while (players.Count != 2)
             yield return null;
-        yield return new WaitForSeconds(2.0f);
+        yield return new WaitForSeconds(1.0f);
 
         game = new MisojiChanGame(players[0].player.name, players[1].player.name);
+        players[0].player = game.firstPlayer;
+        players[1].player = game.secondPlayer;
+
 
         game.age.Subscribe(age =>
         {
@@ -98,15 +102,6 @@ public class GameManager : NetworkBehaviour
     {
         textComponent.text = age.ToString();
     }
-    /*
-        void Update() {
-            WatchEnd();
-            textComponent.text = game.age.ToString();
-            turnPlayer.text = game.turnPlayer.name;
-            WatchEnd();
-        }
-        */
-
 
     [ServerCallback]
     void Update()
@@ -118,9 +113,6 @@ public class GameManager : NetworkBehaviour
     public void IncrementAge(int year)
     {
         game.IncrementAgeByFirstPlayer(year);
-
-        players[0].isMyTurn = players[0].player == game.turnPlayer;
-        players[1].isMyTurn = players[1].player == game.turnPlayer;
     }
 
     void WatchEnd()

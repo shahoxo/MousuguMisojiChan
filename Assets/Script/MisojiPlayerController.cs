@@ -4,16 +4,12 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 public class MisojiPlayerController : NetworkBehaviour {
-    public MisojiChanGame.Player player;
     [SyncVar]
-    public bool isMyTurn;
+    public MisojiChanGame.Player player;
 
-	// Use this for initialization
-	void Start () {
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+
+    public void SetPlayer(MisojiChanGame.Player player)
+    {
+        this.player = player;
+    }
 }
