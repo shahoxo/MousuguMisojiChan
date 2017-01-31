@@ -11,24 +11,24 @@ public class AgeSelector : NetworkBehaviour {
     AgeIncrementorButton[] buttons;
     [SyncVar]
     public int selectedAge;
-
-    void Start()
+    IObservable<int> clickAsObservable = null;
+    public IObservable<int> ClickAsObservable
     {
-        IObservable<int> clickAsObservable = null;
-        buttons.ToList().ForEach(button =>
+        get
         {
-            if (clickAsObservable == null)
-                clickAsObservable = button.ClickAsObservable;
-            else
-                clickAsObservable = clickAsObservable.Merge(button.ClickAsObservable);
-        });
+            if (clickAsObservable != null)
+                return clickAsObservable;
+            
+            buttons.ToList().ForEach(button =>
+            {
+                if (clickAsObservable == null)
+                    clickAsObservable = button.ClickAsObservable;
+                else
+                    clickAsObservable = clickAsObservable.Merge(button.ClickAsObservable);
+            });
 
-        clickAsObservable.Subscribe(age =>
-        {
-            Debug.Log("age: " + age);
-        }).AddTo(this);
-
-
+            return clickAsObservable;
+        }
     }
     
 }

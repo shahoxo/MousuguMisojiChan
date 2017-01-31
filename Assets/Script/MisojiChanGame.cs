@@ -1,8 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UniRx;
 
 public class MisojiChanGame {
-	public int age = 0;
+	//public int age = 0;
+    public ReactiveProperty<int> age = new ReactiveProperty<int>(0);
 	public int turn = 1;
 	public Player firstPlayer;
 	public Player secondPlayer;
@@ -23,20 +25,20 @@ public class MisojiChanGame {
 	}
 
 	public void Reset() {
-		age = 0;
+		age.Value = 0;
 		winner = null;
 	}
 	void IncrementAge(Player player, int age) {
 		if(IsEnding())
 			return;
-		this.age += age;
+        this.age.Value += age;
 		ProgressTurn();
 		if(IsEnding())
 			winner = FindWinner(player);
 	}
 
 	public bool IsEnding() {
-		return age >= 30;
+		return age.Value >= 30;
 	}
 
 	Player FindWinner(Player player) {
