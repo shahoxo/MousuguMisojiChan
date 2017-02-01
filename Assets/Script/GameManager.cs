@@ -44,6 +44,7 @@ public class GameManager : NetworkBehaviour
         NetworkServer.RegisterHandler(MisojiChanMessageType.SendAge, OnReceivedAge);
         NetworkManager.singleton.client.RegisterHandler(MisojiChanMessageType.SendTurnPlayer, OnSnedTurnPlayer);
         NetworkManager.singleton.client.RegisterHandler(MisojiChanMessageType.InitializedGame, OnInitializeGame);
+        NetworkManager.singleton.client.RegisterHandler(MisojiChanMessageType.SendWinner, OnReceivedWinner);
         retryButton.OnClickAsObservable().Subscribe(_ =>
         {
             this.RetryFight();
@@ -63,7 +64,7 @@ public class GameManager : NetworkBehaviour
     {
         var turnPlayerMessage = message.ReadMessage<MisojiChanServerToClientMessenger.TurnPlayerMessage>();
         currentClientPlayer = GameObject.FindObjectsOfType<MisojiPlayerController>().FirstOrDefault(player => player.isLocalPlayer);
-        turnPlayerText.text = turnPlayerMessage.name + (currentClientPlayer.player.id == turnPlayerMessage.id ? "(あなた)" : "");
+        turnPlayerText.text = (currentClientPlayer.player.id == turnPlayerMessage.id ? "あなたの手番です" : turnPlayerMessage.name + "の手番です");
 
     }
     [Client]
@@ -71,6 +72,12 @@ public class GameManager : NetworkBehaviour
     {
         currentClientPlayer = GameObject.FindObjectsOfType<MisojiPlayerController>().FirstOrDefault(player => player.isLocalPlayer);
         currentClientPlayer.SetAgeSelector(ageSelector);
+    }
+    [Client]
+    void OnReceivedWinner(NetworkMessage message)
+    {
+        var winnerMessage = message.ReadMessage<MisojiChanServerToClientMessenger.WinnerMessage>();
+        turnPlayerText.text = winnerMessage.id == currentClientPlayer.player.id ? "あなたの勝ち" : "あなたの負け";
     }
 
 
@@ -99,16 +106,16 @@ public class GameManager : NetworkBehaviour
             // 入力
             while (receivedAgeMessage == null || receivedAgeMessage.id != turnPlayer.id)
                 yield return null;
-            
+
+
             this.IncrementAge(receivedAgeMessage.age);
             receivedAgeMessage = null;
-
-            // 受け付けてインクリメントします
-
-            // 終わってなければ手番を変えます
-
             yield return null;
         }
+
+        serverToClientMessenger.SendWinner(game.winner);
+        // 終わった。
+
     }
 
     [ClientRpc]
@@ -185,6 +192,10 @@ public class MisojiChanServerToClientMessenger
     public class InitializeGame : MessageBase
     {
     }
+    public class WinnerMessage : MessageBase
+    {
+        public int id;
+    }
 
     public void InitializedGame()
     {
@@ -200,6 +211,14 @@ public class MisojiChanServerToClientMessenger
 
         NetworkServer.SendToAll(MisojiChanMessageType.SendTurnPlayer, msg);
     }
+
+    public void SendWinner(MisojiChanGame.Player winner)
+    {
+        WinnerMessage msg = new WinnerMessage();
+        msg.id = winner.id;
+
+        NetworkServer.SendToAll(MisojiChanMessageType.SendWinner, msg);
+    }
 }
 
 public static class MisojiChanMessageType
@@ -208,4 +227,5 @@ public static class MisojiChanMessageType
 
     public static readonly short SendTurnPlayer = 1002;
     public static readonly short InitializedGame = 1003;
+    public static readonly short SendWinner = 1004;
 }
