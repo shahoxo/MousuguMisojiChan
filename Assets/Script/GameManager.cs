@@ -40,25 +40,22 @@ public class GameManager : NetworkBehaviour
     {
         clientToServerMessenger = new MisojiChanClientToServerMessenger();
         serverToClientMessenger = new MisojiChanServerToClientMessenger();
-        NetworkServer.RegisterHandler(MisojiChanMessageType.SendAge, OnSendAge);
+        NetworkServer.RegisterHandler(MisojiChanMessageType.SendAge, OnReceivedAge);
         NetworkManager.singleton.client.RegisterHandler(MisojiChanMessageType.SendTurnPlayer, OnSnedTurnPlayer);
+        NetworkManager.singleton.client.RegisterHandler(MisojiChanMessageType.InitializedGame, OnInitializeGame);
         retryButton.OnClickAsObservable().Subscribe(_ =>
         {
             this.RetryFight();
         }).AddTo(this);
 
-        ageSelector.ClickAsObservable.Subscribe(age =>
-        {
-            Debug.Log("age: " + age);
-            clientToServerMessenger.SendAge(age);
-        }).AddTo(this);
     }
 
     [Server]
-    void OnSendAge(NetworkMessage message)
+    void OnReceivedAge(NetworkMessage message)
     {
-        var misojichanMessage = message.ReadMessage<MisojiChanClientToServerMessenger.SelectedAgeMessage>();
-        this.IncrementAge(misojichanMessage.age);
+        var ageMessage = message.ReadMessage<MisojiChanClientToServerMessenger.SelectedAgeMessage>();
+        Debug.Log("id: " + ageMessage.id + ", age: " + ageMessage.age);
+        this.IncrementAge(ageMessage.age);
     }
     [Client]
     void OnSnedTurnPlayer(NetworkMessage message)
@@ -67,6 +64,12 @@ public class GameManager : NetworkBehaviour
         currentClientPlayer = GameObject.FindObjectsOfType<MisojiPlayerController>().FirstOrDefault(player => player.isLocalPlayer);
         turnPlayerText.text = turnPlayerMessage.name + (currentClientPlayer.player.id == turnPlayerMessage.id ? "(あなた)" : "");
 
+    }
+    [Client]
+    void OnInitializeGame(NetworkMessage message)
+    {
+        currentClientPlayer = GameObject.FindObjectsOfType<MisojiPlayerController>().FirstOrDefault(player => player.isLocalPlayer);
+        currentClientPlayer.SetAgeSelector(ageSelector);
     }
 
 
@@ -81,6 +84,7 @@ public class GameManager : NetworkBehaviour
         players[0].player = game.firstPlayer;
         players[1].player = game.secondPlayer;
 
+        serverToClientMessenger.InitializedGame();
 
         game.age.Subscribe(age =>
         {
@@ -150,13 +154,15 @@ public class MisojiChanClientToServerMessenger
 {
     public class SelectedAgeMessage : MessageBase
     {
+        public int id;
         public int age;
     }
 
-    public void SendAge(int age)
+    public void SendAge(int id, int age)
     {
         SelectedAgeMessage msg = new SelectedAgeMessage();
         msg.age = age;
+        msg.id = id;
 
         NetworkManager.singleton.client.Send(MisojiChanMessageType.SendAge, msg);
     }
