@@ -25,6 +25,7 @@ public class GameManager : NetworkBehaviour
     MisojiChanServerToClientMessenger serverToClientMessenger;
 
     MisojiPlayerController currentClientPlayer;
+    MisojiChanClientToServerMessenger.SelectedAgeMessage receivedAgeMessage;
 
     static public void AddPlayer(GameObject gamePlayer, string _name, short playerControllerId)
     {
@@ -55,7 +56,7 @@ public class GameManager : NetworkBehaviour
     {
         var ageMessage = message.ReadMessage<MisojiChanClientToServerMessenger.SelectedAgeMessage>();
         Debug.Log("id: " + ageMessage.id + ", age: " + ageMessage.age);
-        this.IncrementAge(ageMessage.age);
+        receivedAgeMessage = ageMessage;
     }
     [Client]
     void OnSnedTurnPlayer(NetworkMessage message)
@@ -90,17 +91,21 @@ public class GameManager : NetworkBehaviour
         {
             RpcUpdateAgeText(age);
         }).AddTo(this);
-        turnPlayer = game.turnPlayer;
 
         while (!game.IsEnding())
         {
+            turnPlayer = game.turnPlayer;
             serverToClientMessenger.SendTurnPlayer(turnPlayer);
             // 入力
+            while (receivedAgeMessage == null || receivedAgeMessage.id != turnPlayer.id)
+                yield return null;
+            
+            this.IncrementAge(receivedAgeMessage.age);
+            receivedAgeMessage = null;
 
             // 受け付けてインクリメントします
 
             // 終わってなければ手番を変えます
-
 
             yield return null;
         }
