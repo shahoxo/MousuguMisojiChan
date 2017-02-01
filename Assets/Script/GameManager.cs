@@ -21,7 +21,8 @@ public class GameManager : NetworkBehaviour
     public MisojiPlayerController myPlayer;
     [SerializeField]
     AgeSelector ageSelector;
-    MisojiChanMessenger messenger;
+    MisojiChanClientToServerMessenger clientToServerMessenger;
+    MisojiChanServerToClientMessenger serverToClientMessenger;
 
     MisojiPlayerController currentClientPlayer;
 
@@ -37,7 +38,8 @@ public class GameManager : NetworkBehaviour
 
     void Awake()
     {
-        messenger = new MisojiChanMessenger();
+        clientToServerMessenger = new MisojiChanClientToServerMessenger();
+        serverToClientMessenger = new MisojiChanServerToClientMessenger();
         NetworkServer.RegisterHandler(MisojiChanMessageType.SendAge, OnSendAge);
         NetworkManager.singleton.client.RegisterHandler(MisojiChanMessageType.SendTurnPlayer, OnSnedTurnPlayer);
         retryButton.OnClickAsObservable().Subscribe(_ =>
@@ -48,24 +50,25 @@ public class GameManager : NetworkBehaviour
         ageSelector.ClickAsObservable.Subscribe(age =>
         {
             Debug.Log("age: " + age);
-            messenger.SendAge(age);
+            clientToServerMessenger.SendAge(age);
         }).AddTo(this);
     }
 
     [Server]
     void OnSendAge(NetworkMessage message)
     {
-        var misojichanMessage = message.ReadMessage<MisojiChanMessenger.MisojiChanMessage>();
+        var misojichanMessage = message.ReadMessage<MisojiChanClientToServerMessenger.SelectedAgeMessage>();
         this.IncrementAge(misojichanMessage.age);
     }
     [Client]
     void OnSnedTurnPlayer(NetworkMessage message)
     {
-        var turnPlayerMessage = message.ReadMessage<MisojiChanMessenger.TurnPlayerMessage>();
+        var turnPlayerMessage = message.ReadMessage<MisojiChanServerToClientMessenger.TurnPlayerMessage>();
         currentClientPlayer = GameObject.FindObjectsOfType<MisojiPlayerController>().FirstOrDefault(player => player.isLocalPlayer);
         turnPlayerText.text = turnPlayerMessage.name + (currentClientPlayer.player.id == turnPlayerMessage.id ? "(あなた)" : "");
 
     }
+
 
     [ServerCallback]
     IEnumerator Start()
@@ -87,7 +90,7 @@ public class GameManager : NetworkBehaviour
 
         while (!game.IsEnding())
         {
-            messenger.SendTurnPlayer(turnPlayer);
+            serverToClientMessenger.SendTurnPlayer(turnPlayer);
             // 入力
 
             // 受け付けてインクリメントします
@@ -143,24 +146,39 @@ public class GameManager : NetworkBehaviour
 
 
 
-public class MisojiChanMessenger
+public class MisojiChanClientToServerMessenger
 {
-    public class MisojiChanMessage : MessageBase
+    public class SelectedAgeMessage : MessageBase
     {
         public int age;
     }
+
+    public void SendAge(int age)
+    {
+        SelectedAgeMessage msg = new SelectedAgeMessage();
+        msg.age = age;
+
+        NetworkManager.singleton.client.Send(MisojiChanMessageType.SendAge, msg);
+    }
+
+}
+
+public class MisojiChanServerToClientMessenger
+{
     public class TurnPlayerMessage : MessageBase
     {
         public int id;
         public string name;
     }
 
-    public void SendAge(int age)
+    public class InitializeGame : MessageBase
     {
-        MisojiChanMessage msg = new MisojiChanMessage();
-        msg.age = age;
+    }
 
-        NetworkManager.singleton.client.Send(MisojiChanMessageType.SendAge, msg);
+    public void InitializedGame()
+    {
+        var msg = new InitializeGame();
+        NetworkServer.SendToAll(MisojiChanMessageType.InitializedGame, msg);
     }
 
     public void SendTurnPlayer(MisojiChanGame.Player player)
@@ -171,7 +189,6 @@ public class MisojiChanMessenger
 
         NetworkServer.SendToAll(MisojiChanMessageType.SendTurnPlayer, msg);
     }
-
 }
 
 public static class MisojiChanMessageType
@@ -179,4 +196,5 @@ public static class MisojiChanMessageType
     public static readonly short SendAge = 1001;
 
     public static readonly short SendTurnPlayer = 1002;
+    public static readonly short InitializedGame = 1003;
 }
